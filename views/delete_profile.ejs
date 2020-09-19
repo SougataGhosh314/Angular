@@ -1,0 +1,60 @@
+<%- include('partials/header'); -%>
+<form>
+    <label for="password">Action requires password</label>
+    <input type="password" name="password" required />
+    <div class="password_error"></div>
+    <button>Confirm deletion</button>
+</form>
+
+<script>
+    const form = document.querySelector('form');
+    const passwordError = document.querySelector('.password_error');
+
+    console.log("hiiii");
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        passwordError.textContent = "";
+
+        //reset error fields
+        // emailError.textContent = "";
+        // passwordError.textContent = "";
+
+        //getting the values
+        const password = form.password.value;
+        // const id = user.id;
+        //console.log(password);
+        
+        // const email = form.email.value;
+        // const password = form.password.value;
+
+        try{
+            //todo: needs work!!!
+            console.log("##1##");
+            const result = await fetch('/delete_profile', {
+                method: 'POST',
+                body: JSON.stringify({ password: password }),
+                headers: { 'Content-Type': 'application/json' }  
+            });
+            console.log("##2##");
+            const data = await result.json();
+            console.log("#####", data);
+
+            if (data.errors) {
+                // emailError.textContent = data.errors.email;
+                passwordError.textContent = data.errors.password;
+            }
+
+            if (data["deleted"] === "yes") {
+                
+                location.assign('/');
+                alert("Your profile has been deleted.");
+            }
+
+        }catch(err){
+            console.log("#####", err);
+        }
+    });
+</script>
+
+<%- include('partials/footer'); -%>

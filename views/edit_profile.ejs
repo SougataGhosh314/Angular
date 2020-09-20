@@ -3,7 +3,8 @@
 <form>
     <h2>Edit details</h2>
     <label for="name">Full name</label>
-    <input type="text" name="name" value="<%= user.name %>" required />
+    <input type="text" name="name" value="<%= user.name %>" required /> 
+    <div class="name_error"></div>
     <label for="phone">Phone</label>
     <input type="number" name="phone" value="<%= user.phone %>" required />
     <div class="phone_error"></div>
@@ -18,6 +19,7 @@
 <script>
     const form = document.querySelector('form');
     const phone_error = document.querySelector('.phone_error');
+    const name_error = document.querySelector('.name_error');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -26,6 +28,7 @@
         // emailError.textContent = "";
         // passwordError.textContent = "";
         phone_error.textContent = "";
+        name_error.textContent = "";
 
         //getting the values
         const name = form.name.value;
@@ -34,10 +37,10 @@
         // const email = form.email.value;
         // const password = form.password.value;
 
-        if (JSON.stringify(phone).length-2 != 10) {
-            phone_error.textContent = "Telephone must be 10 digits long";
-            return false;
-        }
+        // if (JSON.stringify(phone).length-2 != 10) {
+        //     phone_error.textContent = "Telephone must be 10 digits long";
+        //     return false;
+        // }
 
         try{
             //todo: needs work!!!
@@ -52,6 +55,8 @@
             console.log(data);
 
             if (data.errors) {
+                name_error.textContent = data.errors.name;
+                phone_error.textContent = data.errors.phone;
                 // emailError.textContent = data.errors.email;
                 // passwordError.textContent = data.errors.password;
             }

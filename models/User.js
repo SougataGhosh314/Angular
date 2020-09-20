@@ -1,31 +1,41 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const { isEmail } = require('validator');
+const { isEmail, isMobilePhone } = require('validator');
+
+const validateName = function(str){
+    return str.match(/^[a-zA-Z][a-zA-Z ]+[a-zA-Z]$/);
+}
+
+const validatePhone = function(str){
+    return isMobilePhone(str, 'en-IN');
+}
 
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
+        validate: [validateName, 'invalid name'],
         required: [true, 'Do not leave empty']
     },
     phone: {
         type: String,
+        validate: [validatePhone, 'invalid phone'],
         required: [true, 'Do not leave empty']
     },
     address: {
         type: String,
         required: [true, 'Do not leave empty']
     },
-    email: {
+    email: { 
         type: String,
         required: [true, 'Please enter an email'],
         unique: true,
         lowercase: true,
-        validate: [isEmail, 'Please enter a valid email']
+        validate: [isEmail, 'invalid email']
     },
     password: {
         type: String,
         required: [true, 'Please enter password'],
-        minlength: [6, 'Password should be at least 6 character long. Use a combination of alphabets, numbers and special characters.']
+        minlength: [6, 'invalid password']
     }
 });
 
@@ -40,8 +50,20 @@ const userSchema = new mongoose.Schema({
 //fire a function BEFORE a new document is saved to the database
 userSchema.pre('save', async function(next){
     const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password, salt);
+    if(this.password.length < 41){
+        this.password = await bcrypt.hash(this.password, salt);
+        //console.log("Code reaches here");
+    }
+    next();
+});
 
+//fire a function BEFORE a new document is updated in the database
+userSchema.pre('update', async function(next){
+    const salt = await bcrypt.genSalt();
+    if(this.password.length < 41){
+        this.password = await bcrypt.hash(this.password, salt);
+        //console.log("Code reaches here");
+    }
     next();
 });
 
@@ -66,4 +88,4 @@ userSchema.statics.login = async function(email, password){
 const User = mongoose.model('user', userSchema);  
 // the name 'user' MUST be singular of whatever the collection is called on the database
 
-module.exports = User;
+module.exports = User; 

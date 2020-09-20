@@ -1,9 +1,18 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { isMobilePhone } = require('validator');
+
+const validateName = function(str){
+    return str.match(/^[a-zA-Z][a-zA-Z ]+[a-zA-Z]$/);
+}
+
+const validatePhone = function(str){
+    return isMobilePhone(str, 'en-IN');
+}
 
 const createToken = (id, password) => {
-    var payload = {
+    var payload = {  
         id: id,
         password: password
     }
@@ -16,33 +25,91 @@ const createToken = (id, password) => {
 }
 
 //handle errors
-const handleErrors = (err) => {
-    console.log(err.message, err.code);
-    let errors = { email: '', password: '' };
+const handleErrors = (err) => {   
+    // console.log("@@@@", err.errors, "@@@@");
+    // console.log("### ", err.message, " ### ", err.code);
+    let errors = { email: '', password: '', name: '', phone: '', new_password: '' };
 
-    //incorrect email
-    if (err.message === 'incorrect email') {
-        errors.email = 'That email is not registered';
-    }
-
-    //incorrect password
-    if (err.message === 'incorrect password') {
-        errors.password = 'That password is incorrect';
-    }
-
-    //duplicate error code
-    if (err.code === 11000) {
-        errors.email = 'This email is already registered.';
-        return errors;
-    }
-
-    //validations error
     if(err.message.includes('user validation failed')){
-        //destructure properties
-        Object.values(err.errors).forEach(({ properties }) => {
-            errors[properties.path] = properties.message;
-        });;
+        //for login:
+        //incorrect email
+        if (err.message.includes('incorrect email')) {
+            errors.email = 'That email is not registered';
+        }
+
+        //incorrect password
+        if (err.message.includes('incorrect password')) {
+            errors.password = 'That password is incorrect';
+        }
+
+        //for signup:
+        //invalid phone
+        if (err.message.includes('invalid phone')) {
+            errors.phone = 'Please enter a valid mobile number';
+        }
+
+        //invalid email
+        if (err.message.includes('invalid email')) {
+            errors.email = 'Please enter a valid email address';
+        }
+
+        //invalid name
+        if (err.message.includes('invalid name')) {
+            errors.name = 'Please enter a valid name';
+        }
+
+        //invalid password
+        if (err.message.includes('invalid password')) {
+            errors.password = 'Please enter a valid password (minimum of 6 characters)';
+        }
+
+        //duplicate error code
+        if (err.code === 11000) {
+            errors.email = 'This email is already registered.';
+            console.log(errors.email);
+            //return errors;
+        }
+        
+        // //destructure properties
+        // Object.values(err.errors).forEach(({ properties }) => {
+        //     //errors[properties.path] = properties.message;
+        // }); 
+    }else{
+        if (err.message.includes('incorrect password')) {
+            errors.password = 'That password is incorrect';
+        }
+
+        if (err.message.includes('too short password')) {
+            errors.new_password = 'Please enter a valid password (minimum of 6 characters)';
+        }
     }
+
+
+    // //validations error
+    // if(err.message.includes('user validation failed')){
+    //     //destructure properties
+    //     Object.values(err.errors).forEach(({ properties }) => {
+    //         errors[properties.path] = properties.message;
+    //     });;
+    // }
+    console.log("hahaha:  ", errors);
+    return errors;
+}
+
+const handleEditErrors = (name, phone) => {   
+    // console.log("@@@@", err.errors, "@@@@");
+    // console.log("### ", err.message, " ### ", err.code);
+    let errors = { name: '', phone: '' };
+
+    if(!validateName(name)){
+        errors.name = 'Please enter a valid name';
+    }
+
+    if (!validatePhone(phone)) {
+        errors.phone = 'Please enter a valid mobile number';
+    }
+
+    console.log("hahaha:  ", errors);
     return errors;
 }
 
@@ -143,26 +210,31 @@ async function changePassword(password, hash, newPassword, id, res){
         console.log("auth: ", auth);
 
         if (auth) {
-            const salt = await bcrypt.genSalt();
-            newPassword = await bcrypt.hash(newPassword, salt);
-            User.findByIdAndUpdate(id, {
-                password: newPassword
-            }, {useFindAndModify: false}, function(err, doc){
-                if (err){  
-                    console.log(err) 
-                } 
-                else{
-                    //const user = await User.login(email, password);
-                    const token = createToken(id, newPassword);
-                    //res.cookie('jwt', '', { maxAge: 1 });
-                    //res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge*1000});
-                    console.log("Updated user : ", doc);
-                    console.log("160 line");
-                    res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge*1000});
-                    res.status(201).json({ "updated": "yes", id: id });
-                    console.log("163 line");
-                } 
-            }); 
+            if(newPassword.length < 6){
+                throw Error("too short password");
+            }else{
+                const salt = await bcrypt.genSalt();
+                newPassword = await bcrypt.hash(newPassword, salt);
+                User.findByIdAndUpdate(id, {
+                    password: newPassword
+                }, {useFindAndModify: false}, function(err, doc){
+                    if (err){  
+                        console.log(err) 
+                    } 
+                    else{
+                        //const user = await User.login(email, password);
+                        const token = createToken(id, newPassword);
+                        //res.cookie('jwt', '', { maxAge: 1 });
+                        //res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge*1000});
+                        console.log("Updated user : ", doc);
+                        console.log("160 line");
+                        res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge*1000});
+                        res.status(201).json({ "updated": "yes", id: id });
+                        console.log("163 line");
+                    } 
+                });
+            }
+             
             //this returns a promise/async task
             //creates a document in our collection 'users' in Atlas and returns
             //an instance of an object
@@ -170,13 +242,12 @@ async function changePassword(password, hash, newPassword, id, res){
         }else{
             throw Error("incorrect password");
         }
+
         // const token = createToken(user._id);
         //res.cookie('jwt', "", {maxAge: 1});
         // res.status(201).json(user);
         // res.status(201).json({ user: user._id });    
-    }catch(err){
-
-        
+    }catch(err){        
         const errors = handleErrors(err);
         res.status(400).json({ errors });
     }
@@ -319,19 +390,47 @@ module.exports.edit_profile_post = async (req, res) => {
     try{
         // const user = await User.create({ name, phone, address, email, password });
         //console.log("##1000##");
+        var flag = true;
+        const errors = handleEditErrors(name, phone);
+        if (errors.name!='' || errors.phone!='') {
+            flag = false;
+            res.status(400).json({ errors });
+        }
+
+        if(flag){
+            await User.findByIdAndUpdate(id, {
+                name: name,
+                phone: phone,
+                address: address
+            }, async function(err, doc){
+                if (err) {
+                    console.log(err);
+                }else{
+                    res.status(201).json({ "updated": "yes" });
+                    console.log("Updated values for user : ", doc); 
+                }
+            });
+        }
+        // const errors = handleErrors(err);
+        // res.status(400).json({ errors });
+        // res.status(201).json({ "updated": "yes" });
+        // console.log("Updated values for user : ", user);
+
+        // const password = user.password;
+        // const email = user.email;
         
-        User.findByIdAndUpdate(id, {
-            name: name,
-            phone: phone,
-            address: address
-        }, {useFindAndModify: false}, function(err, doc){
-            if (err){  
-                console.log(err) 
-            } 
-            else{ 
-                console.log("Updated values for user : ", doc.email); 
-            } 
-        }); 
+        // User.findByIdAndUpdate(id, {
+        //     name: name,
+        //     phone: phone,
+        //     address: address
+        // }, {useFindAndModify: false}, function(err, doc){
+        //     if (err){  
+        //         console.log(err) 
+        //     } 
+        //     else{ 
+        //         console.log("Updated values for user : ", doc.email); 
+        //     } 
+        // }); 
         //this returns a promise/async task
         //creates a document in our collection 'users' in Atlas and returns
         //an instance of an object
@@ -342,10 +441,9 @@ module.exports.edit_profile_post = async (req, res) => {
 
 
         //!!! needs work: flags and stuff!!!
-        res.status(201).json({ "updated": "yes" });
     }catch(err){
-        const errors = handleErrors(err);
-        res.status(400).json({ errors });
+        // const errors = handleErrors(err);
+        // res.status(400).json({ errors });
     }
     
     // console.log(email+"   "+password);

@@ -20,8 +20,102 @@
     <button>Sign Up</button>
 </form>
 
+<table id="verify_email_and_phone">
+    <tr>
+        <td>
+            <label for="email_verification">Verify email</label>
+            <input type="text" class="emailOTP" placeholder="Enter code"/>
+        </td>
+        <td>
+            <button class="check_otp_email">Submit code</button>
+        </td>
+        <td>
+            <button class="verify_email">Get code in email</button>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label for="phone_verification">Verify phone</label>
+            <input type="text" id="phoneOTP" placeholder="Enter code"/>
+        </td>
+        <td>
+            <button class="check_otp_phone">Submit code</button>
+        </td>
+        <td>
+            <button class="verify_phone">Get code in phone</button>
+        </td>
+    </tr>
+</table>
+
+<!-- <script src="/jquery/jquery-3.5.1.js"></script> -->
+<!-- <script src="/scripts/verificationController.js"></script> -->
+
 <script>
-    const form = document.querySelector('form');
+
+    const email_verification = document.querySelector('.email_verification');
+    var isEmailVerified = false;
+    var otpSent = '';
+    
+    const verify_email = document.querySelector('.verify_email');
+    const check_otp_email = document.querySelector('.check_otp_email');
+    // emailOTP.textContent = "code";
+ 
+    
+    
+    
+
+    verify_email.addEventListener('click', async (e) => {
+        //let otp = Math.floor(Math.random() * (999999 - 100000) ) + 100000;
+
+        const form = document.querySelector('form');
+        const email = form.email.value;
+
+        const type = "email";
+        console.log("hahaha ",email);
+        try{
+            const result = await fetch('/send_otp', {
+              method: 'POST',
+              body: JSON.stringify({ type, email }),
+              headers: { 'Content-Type': 'application/json' }  
+            });  
+            const data = await result.json();
+            //console.log(data);
+
+            if (data.errors) {
+                // emailError.textContent = data.errors.email;
+                // passwordError.textContent = data.errors.password;
+                // name_error.textContent = data.errors.name;
+                // phone_error.textContent = data.errors.phone;
+            }
+
+            if (data) {
+                //console.log(data.otp);
+                otpSent = data.otp;
+                // console.log("otpSent: ", otpSent);
+                // alert(otpSent);
+                //location.assign('/');
+            }
+
+        }catch(err){
+            console.log(err);
+        }
+        //alert(otp);
+    });
+
+    check_otp_email.addEventListener('click', (e) => {
+        const emailOTP = document.querySelector('.emailOTP');
+        const otp = emailOTP.value;
+
+        //console.log(parseInt(otp), ":", otpSent)
+        
+        if (parseInt(otp) === parseInt(otpSent)){
+            alert("verified");
+        }else{
+            alert("code incorrect");
+        }
+    });
+
+    //const form = document.querySelector('form');
     const emailError = document.querySelector('.email_error');
     const passwordError = document.querySelector('.password_error');
     const phone_error = document.querySelector('.phone_error');

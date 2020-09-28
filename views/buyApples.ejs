@@ -1,0 +1,97 @@
+<%- include('partials/header'); -%>
+
+<form>
+  <label for="apples">Buy apples</label>
+  <input type="number" name="numberOfApples" required />
+  <div class="zero_error"></div>
+  <button>Confirm Order</button>
+</form>
+
+<script>
+    const form = document.querySelector('form'); 
+    const zero_error = document.querySelector('.zero_error');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        zero_error.textContent = "";
+
+        const numberOfApples = form.numberOfApples.value;
+
+        if (numberOfApples.textContent === '' || numberOfApples.textContent === '0') {
+          zero_error.textContent = "Should be greater than 0";
+          return false;
+        }
+
+        //reset error fields
+      
+
+        //getting the values
+        
+
+        // if (JSON.stringify(phone).length-2 != 10) {
+        //     phone_error.textContent = "Telephone must be 10 digits long";
+        //     return false;
+        // }
+
+
+        try{
+            const result = await fetch('/buy_apples', {
+              method: 'POST',
+              body: JSON.stringify({ numberOfApples }),
+              headers: { 'Content-Type': 'application/json' }  
+            });  
+            const data = await result.json();
+            console.log(data);
+
+            if (data.errors) {
+                // emailError.textContent = data.errors.email;
+                // passwordError.textContent = data.errors.password;
+                // name_error.textContent = data.errors.name;
+                // phone_error.textContent = data.errors.phone;
+            }
+
+            if (data.user) {
+                location.assign('/');
+                alert("Order Placed");
+            }
+
+        }catch(err){
+            console.log(err);
+        }
+    });
+</script>
+
+<%- include('partials/footer'); -%>
+
+<!-- <ul class="recipes">
+  <li class="recipe">
+    <img src="/smoothie.png" alt="smoothie recipe icon">
+    <h4>Banana Boost</h4>
+    <p>Banana, Vanilla ice cream, Milk</p>
+  </li>
+  <li class="recipe">
+    <img src="/smoothie.png" alt="smoothie recipe icon">
+    <h4>Tropical Twist</h4>
+    <p>Peach, Pinapple, Apple juice</p>
+  </li>
+  <li class="recipe">
+    <img src="/smoothie.png" alt="smoothie recipe icon">
+    <h4>Protein Packer</h4>
+    <p>Oats, Peanut butter, Milk, Banana, Blueberries</p>
+  </li>
+  <li class="recipe">
+    <img src="/smoothie.png" alt="smoothie recipe icon">
+    <h4>Banana Boost</h4>
+    <p>Banana, Vanilla ice cream, Milk</p>
+  </li>
+  <li class="recipe">
+    <img src="/smoothie.png" alt="smoothie recipe icon">
+    <h4>Tropical Twist</h4>
+    <p>Peach, Pinapple, Apple juice</p>
+  </li>
+  <li class="recipe">
+    <img src="/smoothie.png" alt="smoothie recipe icon">
+    <h4>Protein Packer</h4>
+    <p>Oats, Peanut butter, Milk, Banana, Blueberries</p>
+  </li>
+</ul> -->

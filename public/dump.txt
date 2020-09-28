@@ -1,0 +1,101 @@
+// <ul> 
+//     <% if (cart_items) { %>
+//         <% for(var i=0; i<cart_items.items.length; i++) { %>
+//             <li>&nbsp&nbspName: <%= cart_items.items[i].itemId %></li>
+//             <li>&nbsp&nbspUnits: <%= cart_items.items[i].unitsToBuy %></li>
+//             <li><br /></li>
+//         <% }; %> 
+//     <% } %>
+// </ul>
+
+<input type="number" id="<%= food_items[i]._id %>" placeholder="0" max="<%= food_items[i].itemCount %>">
+<button class="<%= food_items[i]._id %>" onclick="addToCart(this)">Add to Cart</button>
+
+<ul> 
+    <% if (food_items) { %>
+        <% for(var i = 0; i < food_items.length; i++) { %>
+          <table>
+            <tr>
+              <td>
+                <li>&nbsp&nbspName: <%= food_items[i].itemName %></li>
+                <li>&nbsp&nbspCategory: <%= food_items[i].itemCategory %></li>
+                <li>&nbsp&nbspPrice: <%= food_items[i].itemPrice %></li>
+                <li>&nbsp&nbspUnits available: <%= food_items[i].itemCount %></li>
+                <li>&nbsp&nbspVendor: <%= food_items[i].itemVendor %></li>
+              </td>
+              <td>
+                  <input type="number" id="<%= food_items[i]._id %>" placeholder="0" max="<%= food_items[i].itemCount %>">
+                  <button class="<%= food_items[i]._id %>" onclick="addToCart(this)">Add to Cart</button>
+              </td>
+            </tr>
+          </table>
+          <li><br /></li>
+        <% }; %> 
+      <% } %> 
+</ul>     
+
+// module.exports.send_otp_post = async (req, res) => {
+//     const { type, email } = req.body;
+
+//     let otp = Math.floor(Math.random() * (999999 - 100000) ) + 100000;
+//     if (type === "email") {
+//         var smtpTransport = nodemailer.createTransport("SMTP",{
+//             service: "Gmail",
+//             auth: {
+//                 user: "titan6thanos@gmail.com",
+//                 pass: "#|THAn6OS|#"
+//             }
+//         });
+
+//         var mailOptions;
+//         mailOptions={
+//             to : email,
+//             subject : "Brainstorm products: Please confirm your Email account",
+//             html : "Your verification code is: " + otp 
+//         }
+
+//         console.log(mailOptions);
+//         smtpTransport.sendMail(mailOptions, function(error, response){
+//             if(error){
+//                 console.log(error);
+//                 res.status(400).json({ "error": "Error in order history post request" });
+//      }      else{
+//                 console.log("Message sent: " + response.message);
+//                 res.status(201).json({ "message": "sent", otp: otp });
+//             }
+//         });
+//     }
+
+
+//     // var id = "";
+//     // const token = req.cookies.jwt;
+ 
+//     // if (token) {
+//     //     jwt.verify(token, 'brainstormSecret', async (err, decodedToken) => {
+//     //         if (err) {
+//     //             console.log(err.message);
+//     //         }else{
+//     //             console.log(decodedToken);
+//     //             id = decodedToken.id;
+//     //         }
+//     //    });
+//     // }else{
+//     //     console.log("User not logged in currently");
+//     // }
+
+//     // // var orders = [];
+
+//     // try{
+//     //     Order.find({ userId: id }, function(err, docs){
+//     //         if (err) {
+//     //             console.log("Ran into an error while fetching past orders: ", err);
+//     //         }else{
+//     //             res.status(201).json({ docs });
+//     //             console.log("Past orders fetched: ", docs);
+//     //         }
+//     //     });
+//     // }catch(err){
+//     //     res.status(400).json({ "error": "Error in order history post request" });
+//     // }
+    
+// }

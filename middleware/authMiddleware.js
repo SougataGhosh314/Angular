@@ -3,7 +3,11 @@ const User = require('../models/User');
 
 const bcrypt = require('bcrypt');
 //const { __esModule } = require('validator/lib/isAlpha');
-
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+const encrptionKey = process.env.ENCRYPTION_KEY;
+ 
 const requireAuth = (req, res, next) => {
 
     const token = req.cookies.jwt;
@@ -11,7 +15,7 @@ const requireAuth = (req, res, next) => {
     //check if token exists
     if (token) {
 
-        jwt.verify(token, 'brainstormSecret', async (err, decodedToken) => {
+        jwt.verify(token, encrptionKey, async (err, decodedToken) => {
              if (err) {
                  console.log(err.message);
                  res.redirect('/login');
@@ -26,8 +30,12 @@ const requireAuth = (req, res, next) => {
                     if (decodedToken.password === user.password) {
                         // code won't reach else
                     }else{
+                        res.locals.user = null;
                         res.redirect('/login');
                     }
+                }else{
+                    res.locals.user = null;
+                    res.redirect('/login');
                 }
                  next();
                  //lets you carry on with the next middleware
@@ -40,7 +48,7 @@ const requireAuth = (req, res, next) => {
     }
 }
 
-// check current user
+// check current user 
 const checkUser = (req, res, next) => {
     const token = req.cookies.jwt;
     var passwordFromCurrentToken = "";
@@ -54,10 +62,14 @@ const checkUser = (req, res, next) => {
                 console.log(decodedToken);
                 let user = await User.findById(decodedToken.id);
                 passwordFromCurrentToken = decodedToken.password;
-                if(passwordFromCurrentToken === user.password){
-                    console.log(user);
-                    console.log("$#$#$#");
-                    res.locals.user = user;
+                if(user){
+                    if(passwordFromCurrentToken === user.password){
+                        console.log(user);
+                        console.log("$#$#$#");
+                        res.locals.user = user;
+                    }else{
+                        res.locals.user = null;
+                    }
                 }else{
                     res.locals.user = null;
                 }

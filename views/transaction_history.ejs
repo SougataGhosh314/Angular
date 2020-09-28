@@ -1,0 +1,91 @@
+<%- include('partials/header'); -%>
+
+<div id= "myOrders" class="order_history"></div>
+
+<script>
+  //console.log("XoXoXo", past_orders);
+</script>
+
+<div class="transactions"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    const order_history = document.querySelector('.order_history');
+
+    $(document).ready(async function(){
+
+        const dummyBody = "dumm_dumm";
+      
+        try{
+            const result = await fetch('/order_history', {
+              method: 'POST',
+              body: JSON.stringify({ dummyBody }),
+              headers: { 'Content-Type': 'application/json' }  
+            });  
+            const data = await result.json();
+            console.log(data);
+
+            if (data.errors) {
+                // do something with the errors
+            }
+
+            if (data) {
+              alert(JSON.stringify(data));
+              var toShow = "\nPast transactions: ";
+              var i;
+              var node = [];
+              var sum = "";
+              for(i=0; i<data.transactions.length; i++) {
+                  var thisItemDesc="";
+                  // thisItemDesc += "<br />&nbsp&nbsp id: " + data.docs[i]._id;
+                  thisItemDesc += "<br />&nbsp&nbsp Buyer: " + data.transactions[i].buyerName;
+                  thisItemDesc += "<br />&nbsp&nbsp Seller: " + data.transactions[i].sellerName;
+                  thisItemDesc += "<br />&nbsp&nbsp Items in transaction: "
+
+                  for(var j=0; j<data.transactions[i].items.length; j++){
+                    thisItemDesc += "<br />&nbsp&nbsp&nbsp Item name: " + data.transactions[i].items[j].itemName;
+                    thisItemDesc += "<br />&nbsp&nbsp&nbsp Item Category: " + data.transactions[i].items[j].itemCategory;
+                    thisItemDesc += "<br />&nbsp&nbsp&nbsp Item Price: " + data.transactions[i].items[j].itemPrice;
+                    thisItemDesc += "<br />&nbsp&nbsp&nbsp Units Bought: " + data.transactions[i].items[j].unitsBought;
+                    thisItemDesc += "<br />&nbsp&nbsp&nbsp Vendor name: " + data.transactions[i].items[j].itemVendorName+ "<br />";
+                  }
+
+                  thisItemDesc += "<br />&nbsp&nbsp Total amount: " + data.transactions[i].totalAmount+" INR";
+                  thisItemDesc += "<br />&nbsp&nbsp Time and date: " + data.transactions[i].transactionDateTime+ "<br />";
+
+                  // var divContent = "This is inside node_"+i+"<br /><br />";
+                  var enCasingDivStart = "<div id= 'transactionBox_"+i+"'>";
+                  var divStart = "<div id= 'transactionDesc_"+i+"'>";
+                  var divEnd = "</div>";
+                  var enCasingDivEnd = "</div>";
+
+                  node.push(enCasingDivStart
+                          +divStart
+                          +thisItemDesc
+                          +divEnd+enCasingDivEnd);
+                  sum+=node[i];
+              }
+
+              $("#myOrders").html(sum);
+
+                  for(i=0; i<node.length; i++){
+                      // console.log(node[i]);
+                      $("#transactionBox_"+i).css({
+                                  'border': '4px solid blue', 
+                                  'padding': '10px'
+                              },{
+                                  'width': '250px'
+                              });
+                  }
+          }
+ 
+        }catch(err){
+            console.log("some error in order history post request: ", err);
+        }
+    
+    });
+
+</script>
+
+<%- include('partials/footer'); -%>

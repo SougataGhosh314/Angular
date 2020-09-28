@@ -1,0 +1,141 @@
+<%- include('partials/header'); -%>
+Food
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- <script>
+    var id = '';
+    var count = '';
+</script> -->
+
+<label for="inventory">Food items:</label>
+<!-- <div id="myInventory" class= "my_inventory"></div> -->
+
+<div id="foodItems"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script> 
+
+    var foodItemsLocal;
+
+    $(document).ready(async function(){
+
+        const category = "food";
+
+        try{
+            const result = await fetch('/get_items', {
+                method: 'POST',
+                body: JSON.stringify({ category }),
+                headers: { 'Content-Type': 'application/json' }  
+            });  
+            const data = await result.json();
+            console.log(data);
+            foodItemsLocal = data;
+
+            if (data.errors) {
+                // do something with errors pop up maybe
+            }
+
+            if (data.docs) {
+                var node = [];
+                var i;
+                var sum="";
+                for(i=0; i<data.docs.length; i++) {
+                    var thisItemDesc="";
+                    // thisItemDesc += "<br />&nbsp&nbsp id: " + data.docs[i]._id;
+                    thisItemDesc += "<br />&nbsp&nbsp name: " + data.docs[i].itemName;
+                    thisItemDesc += "<br />&nbsp&nbsp category: " + data.docs[i].itemCategory;
+                    thisItemDesc += "<br />&nbsp&nbsp itemPrice: " + data.docs[i].itemPrice;
+                    thisItemDesc += "<br />&nbsp&nbsp units available: " + data.docs[i].itemCount;
+                    thisItemDesc += "<br />&nbsp&nbsp itemVendor: " + data.docs[i].itemVendorName;
+                    thisItemDesc += "<br />&nbsp&nbsp purchaseLimit: " +data.docs[i].purchaseLimit + "<br />"
+ 
+                    // var divContent = "This is inside node_"+i+"<br /><br />";
+                    var enCasingDivStart = "<div id= 'itemBox_"+i+"'>";
+                    var divStart = "<div id= 'foodItemDesc_"+i+"'>";
+                    var divEnd = "</div>";
+
+                    var ibDivStart = "<div id= 'foodItem_"+i+"'>";
+                        var input = "<input class = 'input_"+i+
+                        "' type='number' min='0' max='"+data.docs[i].purchaseLimit
+                        +"' onkeypress='return false;'/>"
+                    var button = "<button class='"+i+"_"+data.docs[i]._id+
+                        "' onclick=addToCart(this)>Add to cart</button>";
+                    var ibDivEnd = "</div>";
+                    var enCasingDivEnd = "</div>";
+
+                    node.push(enCasingDivStart+divStart
+                            +thisItemDesc
+                            +divEnd+ibDivStart
+                            +input+button+ibDivEnd+enCasingDivEnd);
+                    sum+=node[i];
+                };
+
+                $("#foodItems").html(sum);
+
+                for(i=0; i<node.length; i++){
+                    // console.log(node[i]);
+                    $("#itemBox_"+i).css(
+                                    {
+                                        'border': '4px solid red', 
+                                        'padding': '10px'
+                                    },
+                                    {
+                                        'width': '250px'
+                                    });
+                }
+
+            }
+
+        }catch(err){
+            console.log("some error in food items post request: ", err);
+        }
+
+    });
+    
+    async function addToCart(obj){
+        // $()
+        var className = $(obj).attr('class');
+        var arr = className.split("_");
+        var unitsToBuy = $('.input_'+ arr[0]).val();
+        var itemId = arr[1]+"";
+      
+        try{
+            const result = await fetch('/add_to_cart', {
+              method: 'POST',
+              body: JSON.stringify({
+                  itemId,
+                  unitsToBuy
+                }),
+              headers: { 'Content-Type': 'application/json' }  
+            });  
+            const data = await result.json();
+            console.log(data);
+
+            if (data.errors) {
+                // do something with the errors pop up maybe
+            }
+
+            if (data) {
+                // console.log(data);
+                alert("Added to cart");
+                location.assign('/food_items');
+            }
+
+        }catch(err){
+            console.log("some error in add to cart post request: ", err);
+        }
+
+        //alert(itemId+":  "+itemCount);
+    }
+</script>
+
+<!-- <script>
+    const food_items = document.querySelector('.food_items');
+
+    
+
+</script> -->
+
+<%- include('partials/footer'); -%>

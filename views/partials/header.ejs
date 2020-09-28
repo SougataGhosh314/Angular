@@ -11,6 +11,8 @@
     <ul>
       <% if (user) { %>
         <li>Welcome, <%= user.name %></li>
+        <a href="/balance_history"><li>Balance: <%= user.balance %> INR</li></a>
+        <li><a href="/my_cart">My Cart</a></li>
         <li><a href="/edit_profile">Edit profile</a></li>
         <li><a href="/logout">Log Out</a></li>
       <% } else { %>

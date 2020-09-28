@@ -1,0 +1,167 @@
+<%- include('partials/header'); -%>
+
+<label for="inventory">My inventory:</label>
+
+<table>
+  <tr>
+    
+    <td> 
+      <div id="inventory"></div>
+    </td>
+
+    <td>
+      <form>
+          <h2>Add Item to sell:</h2>
+          <label for="name">Product name</label>
+          <input type="text" name="itemName" required />
+          <div class="itemName_error"></div>
+
+          <label for="category">Category</label>
+          <input type="text" name="itemCategory" required />
+          <div class="itemCategory_error"></div>
+
+          <label for="price">Price</label>
+          <input type="text" name="itemPrice" required />
+          <div class="itemPrice_error"></div>
+
+          <label for="count">Units available with you</label>
+          <input type="text" name="itemCount" required />
+          <div class="itemCount_error"></div>
+
+          <label for="limit">Purchase limit for one buyer</label>
+          <input type="text" name="purchaseLimit" required />
+          <div class="purchaseLimit_error"></div>
+
+          <button>Confirm addition</button>
+      </form>
+    </td>
+  </tr>
+</table>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    const form = document.querySelector('form');
+    const itemName = document.querySelector('.itemName');
+    const itemCategory = document.querySelector('.itemCategory');
+    const itemPrice = document.querySelector('.itemPrice');
+    const itemCount = document.querySelector('.itemCount');
+    const purchaseLimit = document.querySelector('.purchaseLimit');
+    // const my_inventory = document.querySelector('.my_inventory');
+
+    $(document).ready(async function(){
+
+        const dummyBody = "dumm_dumm";
+
+        try{
+            const result = await fetch('/load_inventory', {
+                method: 'POST', 
+                body: JSON.stringify({ dummyBody }),
+                headers: { 'Content-Type': 'application/json' }  
+            }); 
+            const data = await result.json();
+            console.log(data);
+
+            if (data.errors) {
+                // emailError.textContent = data.errors.email;
+                // passwordError.textContent = data.errors.password;
+                // name_error.textContent = data.errors.name;
+                // phone_error.textContent = data.errors.phone;
+            }
+
+            if (data.docs) {
+                var node = [];
+                var i;
+                var sum="";
+                var toShow = "\nitems: ";
+                
+                for(i=0; i<data.docs.length; i++) {
+                var thisItemDesc="";
+                    thisItemDesc += "<br />&nbsp&nbsp name: " + data.docs[i].itemName;
+                    thisItemDesc += "<br />&nbsp&nbsp category: " + data.docs[i].itemCategory;
+                    thisItemDesc += "<br />&nbsp&nbsp itemPrice: " + data.docs[i].itemPrice;
+                    thisItemDesc += "<br />&nbsp&nbsp units left in stock: " + data.docs[i].itemCount;
+                    thisItemDesc += "<br />&nbsp&nbsp purchaseLimit: " +data.docs[i].purchaseLimit + "<br />"
+
+                    // var divContent = "This is inside node_"+i+"<br /><br />";
+                    var enCasingDivStart = "<div id= 'itemBox_"+i+"'>";
+                    var divStart = "<div id= 'foodItemDesc_"+i+"'>";
+                    var divEnd = "</div>";
+
+                    var ibDivStart = "<div id= 'foodItem_"+i+"'>";
+                    var button = "<button class='"+i+"_"+data.docs[i]._id+
+                        "' onclick=removeFromInventory(this)>Remove from inventory</button>";
+                    var ibDivEnd = "</div>";
+                    var enCasingDivEnd = "</div>";
+
+                    node.push(enCasingDivStart+divStart
+                            +thisItemDesc
+                            +divEnd+ibDivStart
+                            +button+ibDivEnd+enCasingDivEnd);
+                    sum+=node[i];
+                };
+                //order_history.textContent = toShow;
+
+                $("#inventory").html(sum);
+
+                for(i=0; i<node.length; i++){
+                    // console.log(node[i]);
+                    $("#itemBox_"+i).css(
+                                    {
+                                        'border': '4px solid red', 
+                                        'padding': '10px'
+                                    },
+                                    {
+                                        'width': '250px'
+                                    });
+                }
+                //order_history.textContent = JSON.stringify(data, null, 2);
+            }
+
+        }catch(err){
+            console.log("some error in inventory loading post request: ", err);
+        }
+
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        const name = form.itemName.value;
+        const category = form.itemCategory.value;
+        const price = form.itemPrice.value;
+        const count = form.itemCount.value;
+        const purchaseLimit = form.purchaseLimit.value;
+
+        // const dummyBody = "dumm_dumm";
+      
+        try{
+            const result = await fetch('/sell_products', {
+              method: 'POST',
+              body: JSON.stringify({ name, category, price, count, purchaseLimit }),
+              headers: { 'Content-Type': 'application/json' }  
+            });  
+            const data = await result.json();
+            console.log(data);
+
+            if (data.errors) {
+                // do something with errors pop ups or something!!!
+            }
+
+            if (data.item) {
+                location.assign('/sell_products');
+                alert("Item added: ", JSON.stringify(data.item));
+            }
+
+        }catch(err){
+            console.log("some error in sell product post request: ", err);
+        }
+    });
+
+    function removeFromInventory(obj){
+        alert($(obj).attr('class'));
+    }
+
+</script>
+
+<%- include('partials/footer'); -%>

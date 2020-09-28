@@ -10,6 +10,48 @@ const validatePhone = function(str){
     return isMobilePhone(str, 'en-IN');
 }
 
+const cart_item = {
+    itemId: {
+        type: String,
+        required: true
+    },
+    itemName: {
+        type: String,
+        required: true
+    },
+    itemCategory: {
+        type: String,
+        required: true
+    },
+    itemPrice: {
+        type: Number,
+        required: true
+    },
+    unitsToBuy: {
+        type: Number,
+        required: true
+    },
+    itemVendorId: {
+        type: String,
+        required: true
+    },
+    itemVendorName: {
+        type: String,
+        required: true
+    }
+}
+
+const status = {
+    status: {
+        type: String,
+        required: true
+    },
+    estimatedArrival: {
+        type: String,
+        required: true
+    }
+}
+
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -36,6 +78,36 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please enter password'],
         minlength: [6, 'invalid password']
+    },
+    balance: {
+        type: Number,
+    },
+    balanceHistory: {
+        type: [
+            {
+                balanceBefore: {
+                    type: Number,
+                    required: true
+                },
+                taggedTransactionId: {
+                    type: String,
+                    required: true
+                },
+                balanceAfter: {
+                    type: Number,
+                    required: true
+                }    
+            }
+        ]
+    },
+    cart: {
+        cartItems: [cart_item],
+        cartTotal: {
+            type: Number
+        }
+    },
+    deliveryStatus: {
+        type: [status]
     }
 });
 
